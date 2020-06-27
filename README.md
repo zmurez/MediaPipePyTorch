@@ -4,6 +4,8 @@ Port of MediaPipe (https://github.com/google/mediapipe) tflite models to PyTorch
 
 Builds upon the work of https://github.com/hollance/BlazeFace-PyTorch
 
+```python demo.py```
+
 ## Models ported so far
 1. Face detector (BlazeFace)
 1. Face landmarks
