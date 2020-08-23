@@ -23,6 +23,7 @@ class BlazePalm(BlazeDetector):
         self.w_scale = 256.0
         self.min_score_thresh = 0.5
         self.min_suppression_threshold = 0.3
+        self.num_keypoints = 7
 
         # These settings are for converting detections to ROIs which can then
         # be extracted and feed into the landmark network

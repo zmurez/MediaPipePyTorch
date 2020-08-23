@@ -73,7 +73,7 @@ def denormalize_detections(detections, scale, pad):
 
 
 class BlazeBlock(nn.Module):
-    def __init__(self, in_channels, out_channels, kernel_size=3, stride=1, act='relu'):
+    def __init__(self, in_channels, out_channels, kernel_size=3, stride=1, act='relu', skip_proj=False):
         super(BlazeBlock, self).__init__()
 
         self.stride = stride
@@ -96,6 +96,12 @@ class BlazeBlock(nn.Module):
                       kernel_size=1, stride=1, padding=0, bias=True),
         )
 
+        if skip_proj:
+            self.skip_proj = nn.Conv2d(in_channels=in_channels, out_channels=out_channels, 
+                      kernel_size=1, stride=1, padding=0, bias=True)
+        else:
+            self.skip_proj = None
+
         if act == 'relu':
             self.act = nn.ReLU(inplace=True)
         elif act == 'prelu':
@@ -113,8 +119,11 @@ class BlazeBlock(nn.Module):
         else:
             h = x
 
-        if self.channel_pad > 0:
+        if self.skip_proj is not None:
+            x = self.skip_proj(x)
+        elif self.channel_pad > 0:
             x = F.pad(x, (0, 0, 0, 0, 0, self.channel_pad), "constant", 0)
+        
 
         return self.act(self.convs(h) + x)
 
@@ -344,7 +353,7 @@ class BlazeDetector(BlazeBase):
         boxes[..., 2] = y_center + h / 2.  # ymax
         boxes[..., 3] = x_center + w / 2.  # xmax
 
-        for k in range(6):
+        for k in range(self.num_keypoints):
             offset = 4 + k*2
             keypoint_x = raw_boxes[..., offset    ] / self.x_scale * anchors[:, 2] + anchors[:, 0]
             keypoint_y = raw_boxes[..., offset + 1] / self.y_scale * anchors[:, 3] + anchors[:, 1]
