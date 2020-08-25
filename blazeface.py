@@ -47,6 +47,8 @@ class BlazeFace(BlazeDetector):
 
         # These settings are for converting detections to ROIs which can then
         # be extracted and feed into the landmark network
+        # use mediapipe/calculators/util/detections_to_rects_calculator.cc
+        self.detection2roi_method = 'box'
         # mediapipe/modules/face_landmark/face_detection_front_detection_to_roi.pbtxt
         self.kp1 = 1
         self.kp2 = 0

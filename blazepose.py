@@ -27,7 +27,7 @@ class BlazePose(BlazeDetector):
         super(BlazePose, self).__init__()
 
         # These are the settings from the MediaPipe example graph
-        # mediapipe/graphs/face_detection/face_detection_mobile_gpu.pbtxt
+        # mediapipe/modules/pose_detection/pose_detection_cpu.pbtxt
         self.num_classes = 1
         self.num_anchors = 896
         self.num_coords = 12
@@ -42,10 +42,12 @@ class BlazePose(BlazeDetector):
 
         # These settings are for converting detections to ROIs which can then
         # be extracted and feed into the landmark network
-        # mediapipe/modules/face_landmark/face_detection_front_detection_to_roi.pbtxt
+        # use mediapipe/calculators/util/alignment_points_to_rects_calculator.cc
+        self.detection2roi_method = 'alignment'
+        # mediapipe/modules/pose_landmark/pose_detection_to_roi.pbtxt
         self.kp1 = 2
         self.kp2 = 3
-        self.theta0 = 90.*np.pi/180
+        self.theta0 = 90 * np.pi / 180
         self.dscale = 1.5
         self.dy = 0.
 

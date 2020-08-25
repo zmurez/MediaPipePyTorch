@@ -167,14 +167,14 @@ class BlazeLandmark(BlazeBase):
         for i in range(points.shape[0]):
             pts = points[i, :, :3].cpu().numpy().T
             M = cv2.getAffineTransform(pts, points1)
-            img = cv2.warpAffine(frame, M, (res,res))
+            img = cv2.warpAffine(frame, M, (res,res))#, borderValue=127.5)
             img = torch.from_numpy(img)
             imgs.append(img)
             affine = cv2.invertAffineTransform(M).astype('float32')
             affine = torch.from_numpy(affine)
             affines.append(affine)
         if imgs:
-            imgs = torch.stack(imgs).permute(0,3,1,2).float() / 127.5 - 1.0
+            imgs = torch.stack(imgs).permute(0,3,1,2).float() / 255.#/ 127.5 - 1.0
             affines = torch.stack(affines)
         else:
             imgs = torch.zeros((0, 3, res, res))
@@ -199,7 +199,7 @@ class BlazeDetector(BlazeBase):
 
     def _preprocess(self, x):
         """Converts the image pixels to the range [-1, 1]."""
-        return x.float() / 127.5 - 1.0
+        return x.float() / 255.# 127.5 - 1.0
 
     def predict_on_image(self, img):
         """Makes a prediction on a single image.
@@ -274,21 +274,34 @@ class BlazeDetector(BlazeBase):
         and shifted by dscale and dy.
 
         """
-        # compute box center and scale
-        xc = (detection[:,1] + detection[:,3]) / 2
-        yc = (detection[:,0] + detection[:,2]) / 2
-        scalex = (detection[:,3] - detection[:,1])
-        scaley = (detection[:,0] - detection[:,2])
-        scale = torch.max(scalex, scaley)
-        scale *= self.dscale #2.6
-        yc += self.dy * scaley #.5
+        if self.detection2roi_method == 'box':
+            # compute box center and scale
+            # use mediapipe/calculators/util/detections_to_rects_calculator.cc
+            xc = (detection[:,1] + detection[:,3]) / 2
+            yc = (detection[:,0] + detection[:,2]) / 2
+            scale = (detection[:,3] - detection[:,1]) # assumes square boxes
+
+        elif self.detection2roi_method == 'alignment':
+            # compute box center and scale
+            # use mediapipe/calculators/util/alignment_points_to_rects_calculator.cc
+            xc = detection[:,4+2*self.kp1]
+            yc = detection[:,4+2*self.kp1+1]
+            x1 = detection[:,4+2*self.kp2]
+            y1 = detection[:,4+2*self.kp2+1]
+            scale = ((xc-x1)**2 + (yc-y1)**2).sqrt() * 2
+        else:
+            raise NotImplementedError(
+                "detection2roi_method [%s] not supported"%self.detection2roi_method)
+
+        yc += self.dy * scale
+        scale *= self.dscale
 
         # compute box rotation
-        x0 = detection[:,4+2*self.kp1] #4
-        y0 = detection[:,4+2*self.kp1+1] #5
-        x1 = detection[:,4+2*self.kp2] #8
-        y1 = detection[:,4+2*self.kp2+1] #9
-        theta = np.arctan2(y0-y1, x0-x1) - self.theta0 #np.pi/2
+        x0 = detection[:,4+2*self.kp1]
+        y0 = detection[:,4+2*self.kp1+1]
+        x1 = detection[:,4+2*self.kp2]
+        y1 = detection[:,4+2*self.kp2+1]
+        theta = np.arctan2(y0-y1, x0-x1) - self.theta0
         return xc, yc, scale, theta
 
 

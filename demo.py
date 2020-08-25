@@ -22,6 +22,7 @@ face_detector.load_anchors("anchors_face.npy")
 palm_detector = BlazePalm().to(gpu)
 palm_detector.load_weights("blazepalm.pth")
 palm_detector.load_anchors("anchors_palm.npy")
+palm_detector.min_score_thresh = .75
 
 hand_regressor = BlazeHandLandmark().to(gpu)
 hand_regressor.load_weights("blazehand_landmark.pth")

@@ -27,11 +27,14 @@ class BlazePalm(BlazeDetector):
 
         # These settings are for converting detections to ROIs which can then
         # be extracted and feed into the landmark network
+        # use mediapipe/calculators/util/detections_to_rects_calculator.cc
+        self.detection2roi_method = 'box'
+        # mediapipe/graphs/hand_tracking/subgraphs/hand_detection_cpu.pbtxt
         self.kp1 = 0
         self.kp2 = 2
         self.theta0 = np.pi/2
         self.dscale = 2.6
-        self.dy = 0.5
+        self.dy = -0.5
 
         self._define_layers()
 

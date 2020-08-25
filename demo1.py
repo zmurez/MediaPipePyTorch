@@ -6,7 +6,7 @@ from blazebase import resize_pad, denormalize_detections
 from blazepose import BlazePose
 from blazepose_landmark import BlazePoseLandmark
 
-from visualization import draw_detections, draw_landmarks, draw_roi
+from visualization import draw_detections, draw_landmarks, draw_roi, POSE_CONNECTIONS
 
 gpu = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 torch.set_grad_enabled(False)
@@ -45,18 +45,15 @@ while hasFrame:
     img, affine, box = pose_regressor.extract_roi(frame, xc, yc, theta, scale)
     flags, landmarks, mask = pose_regressor(img)
 
-
     draw_detections(frame, pose_detections)
     draw_roi(frame, box)
 
     for i in range(len(flags)):
         landmark, flag, M = landmarks[i], flags[i], affine[i]
-        print(flag)
         if flag>.5:
             landmark = landmark[:,:2]*256
             landmark = (M[:,:2] @ landmark.T + M[:,2:]).T
-            draw_landmarks(frame, landmark, size=1)
-
+            draw_landmarks(frame, landmark, POSE_CONNECTIONS, size=2)
 
     cv2.imshow(WINDOW, frame[:,:,::-1])
     # cv2.imwrite('sample/%04d.jpg'%frame_ct, frame[:,:,::-1])
