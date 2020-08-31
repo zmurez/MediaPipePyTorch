@@ -43,7 +43,8 @@ while hasFrame:
 
     xc, yc, scale, theta = pose_detector.detection2roi(pose_detections)
     img, affine, box = pose_regressor.extract_roi(frame, xc, yc, theta, scale)
-    flags, landmarks, mask = pose_regressor(img)
+    flags, normalized_landmarks, mask = pose_regressor(img)
+    landmarks = pose_regressor.denormalize_landmarks(normalized_landmarks, affine)
 
     draw_detections(frame, pose_detections)
     draw_roi(frame, box)
@@ -51,8 +52,6 @@ while hasFrame:
     for i in range(len(flags)):
         landmark, flag, M = landmarks[i], flags[i], affine[i]
         if flag>.5:
-            landmark = landmark[:,:2]*256
-            landmark = (M[:,:2] @ landmark.T + M[:,2:]).T
             draw_landmarks(frame, landmark, POSE_CONNECTIONS, size=2)
 
     cv2.imshow(WINDOW, frame[:,:,::-1])

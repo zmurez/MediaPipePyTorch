@@ -182,6 +182,14 @@ class BlazeLandmark(BlazeBase):
 
         return imgs, affines, points
 
+    def denormalize_landmarks(self, landmarks, affines):
+        landmarks = landmarks[:,:,:2] * self.resolution
+        for i in range(len(landmarks)):
+            landmark, affine = landmarks[i], affines[i]
+            landmark = (affine[:,:2] @ landmark[:,:2].T + affine[:,2:]).T
+            landmarks[i,:,:2] = landmark
+        return landmarks
+
 
 
 class BlazeDetector(BlazeBase):

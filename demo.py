@@ -57,29 +57,26 @@ while hasFrame:
 
     xc, yc, scale, theta = face_detector.detection2roi(face_detections)
     img, affine, box = face_regressor.extract_roi(frame, xc, yc, theta, scale)
-    flags, landmarks = face_regressor(img)
+    flags, normalized_landmarks = face_regressor(img)
+    landmarks = face_regressor.denormalize_landmarks(normalized_landmarks, affine)
 
 
     xc, yc, scale, theta = palm_detector.detection2roi(palm_detections)
     img, affine2, box2 = hand_regressor.extract_roi(frame, xc, yc, theta, scale)
-    flags2, handed2, landmarks2 = hand_regressor(img)
-
+    flags2, handed2, normalized_landmarks2 = hand_regressor(img)
+    landmarks2 = hand_regressor.denormalize_landmarks(normalized_landmarks2, affine2)
     
 
     for i in range(len(flags)):
         landmark, flag, M = landmarks[i], flags[i], affine[i]
         if flag>.5:
-            landmark = landmark[:,:2]*192
-            landmark = (M[:,:2] @ landmark.T + M[:,2:]).T
-            draw_landmarks(frame, landmark, size=1)
+            draw_landmarks(frame, landmark[:,:2], size=1)
 
 
     for i in range(len(flags2)):
         landmark, flag, M = landmarks2[i], flags2[i], affine2[i]
         if flag>.5:
-            landmark = landmark[:,:2]*256
-            landmark = (M[:,:2] @ landmark.T + M[:,2:]).T
-            draw_landmarks(frame, landmark, HAND_CONNECTIONS, size=2)
+            draw_landmarks(frame, landmark[:,:2], HAND_CONNECTIONS, size=2)
 
     draw_roi(frame, box)
     draw_roi(frame, box2)
