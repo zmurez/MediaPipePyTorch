@@ -68,13 +68,13 @@ while hasFrame:
     
 
     for i in range(len(flags)):
-        landmark, flag, M = landmarks[i], flags[i], affine[i]
+        landmark, flag = landmarks[i], flags[i]
         if flag>.5:
             draw_landmarks(frame, landmark[:,:2], size=1)
 
 
     for i in range(len(flags2)):
-        landmark, flag, M = landmarks2[i], flags2[i], affine2[i]
+        landmark, flag = landmarks2[i], flags2[i]
         if flag>.5:
             draw_landmarks(frame, landmark[:,:2], HAND_CONNECTIONS, size=2)
 

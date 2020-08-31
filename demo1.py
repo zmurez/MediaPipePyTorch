@@ -50,7 +50,7 @@ while hasFrame:
     draw_roi(frame, box)
 
     for i in range(len(flags)):
-        landmark, flag, M = landmarks[i], flags[i], affine[i]
+        landmark, flag = landmarks[i], flags[i]
         if flag>.5:
             draw_landmarks(frame, landmark, POSE_CONNECTIONS, size=2)
 
